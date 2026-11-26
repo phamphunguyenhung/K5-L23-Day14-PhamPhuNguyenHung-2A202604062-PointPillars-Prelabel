@@ -17,8 +17,8 @@ Ghi **trước** khi chạy `scripts/pp_sweep.py`, rồi commit và push ngay (l
 
 | Cấu hình | Xóa | Thêm | Sửa | Chi phí |
 |---|---:|---:|---:|---:|
-| Gốc | 36 | 11 | 8 | 25.80 |
-| `best_config.json` | 15 | 12 | 8 | 20.50 |
+| Gốc | 36 | 11 | 9 | 26.30 |
+| `best_config.json` | 15 | 12 | 9 | 21.00 |
 
 - Tham số đã đổi trong `best_config.json`: `score_thr: 0.1 -> 0.4` (giữ `intensity_mode=clip`, `ground_mode=fixed`, `min_points=0`).
 - Kết quả leave-one-out (dán các dòng `scripts/pp_sweep.py` in ra):
@@ -31,8 +31,8 @@ Ghi **trước** khi chạy `scripts/pp_sweep.py`, rồi commit và push ngay (l
 
 ![so sánh](../../d14_2A202604062/compare/s02f17.jpg)
 
-- `scripts/pp_compare.py` báo giảm 21% công sửa trên tập A (`25.8 -> 20.5`).
-- Dự đoán ở mục 1 đúng hay sai? Giải thích bằng số box xóa/thêm/sửa: Dự đoán ở mục 1 **đúng một phần**: việc nâng ngưỡng lọc `score_thr` lên `0.4` giúp cắt mạnh box `Car` ảo (giảm số hộp cần **xóa** từ `36` xuống `15`, dù số hộp cần **thêm** tăng nhẹ từ `11` lên `12`, giữ nguyên `8` sửa, giúp tổng chi phí giảm từ `25.8` xuống `20.5`). Tuy nhiên dự đoán dùng `intensity_mode=log` ở mục 1 **chưa đúng**: kết quả sweep cho thấy `log` làm chi phí tăng lên `23.7–29.7` do làm giảm recall nhiều hơn so với `clip`.
+- `scripts/pp_compare.py` báo giảm 20% công sửa trên tập A (`26.3 -> 21.0`).
+- Dự đoán ở mục 1 đúng hay sai? Giải thích bằng số box xóa/thêm/sửa: Dự đoán ở mục 1 **đúng một phần**: việc nâng ngưỡng lọc `score_thr` lên `0.4` giúp cắt mạnh box `Car` ảo (giảm số hộp cần **xóa** từ `36` xuống `15`, dù số hộp cần **thêm** tăng nhẹ từ `11` lên `12`, giữ nguyên `9` sửa, giúp tổng chi phí giảm từ `26.3` xuống `21.0`). Tuy nhiên dự đoán dùng `intensity_mode=log` ở mục 1 **chưa đúng**: kết quả sweep cho thấy `log` làm chi phí tăng lên `23.7–29.7` do làm giảm recall nhiều hơn so với `clip`.
 
 ## 4. Tập B
 
