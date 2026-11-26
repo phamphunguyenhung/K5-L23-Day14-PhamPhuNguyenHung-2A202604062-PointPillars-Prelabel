@@ -17,19 +17,22 @@ Ghi **trước** khi chạy `scripts/pp_sweep.py`, rồi commit và push ngay (l
 
 | Cấu hình | Xóa | Thêm | Sửa | Chi phí |
 |---|---:|---:|---:|---:|
-| Gốc | | | | |
-| `best_config.json` | | | | |
+| Gốc | 36 | 11 | 8 | 25.80 |
+| `best_config.json` | 15 | 12 | 8 | 20.50 |
 
-- Tham số đã đổi trong `best_config.json`: ...
-- Kết quả leave-one-out (dán các dòng `scripts/pp_sweep.py` in ra): ...
-- Cấu hình có ổn định trên từng frame không? Vì sao tôi vẫn chọn (hoặc không chọn) nó: ...
+- Tham số đã đổi trong `best_config.json`: `score_thr: 0.1 -> 0.4` (giữ `intensity_mode=clip`, `ground_mode=fixed`, `min_points=0`).
+- Kết quả leave-one-out (dán các dòng `scripts/pp_sweep.py` in ra):
+  - `s01f23: cấu hình chọn {'intensity_mode': 'log', 'ground_mode': 'auto', 'score_thr': '0.4', 'min_points': '0'} -> 14.9 (tốt nhất có thể 11.0)`
+  - `s02f17: cấu hình chọn {'intensity_mode': 'clip', 'ground_mode': 'fixed', 'score_thr': '0.4', 'min_points': '0'} -> 7.4 (tốt nhất có thể 6.1)`
+  - `s04f46: cấu hình chọn {'intensity_mode': 'clip', 'ground_mode': 'fixed', 'score_thr': '0.4', 'min_points': '0'} -> 2.1 (tốt nhất có thể 2.1)`
+- Cấu hình có ổn định trên từng frame không? Vì sao tôi vẫn chọn (hoặc không chọn) nó: 2/3 fold (`s02f17`, `s04f46`) đều chọn `clip, fixed, score_thr=0.4` và đạt đúng/gần mức oracle (`7.4 vs 6.1`, `2.1 vs 2.1`). Fold `s01f23` chọn `log, auto` khi bỏ ra nhưng đạt `14.9` kém hơn `clip, fixed, 0.4` (`11.0`). Do đó vẫn chọn `clip, fixed, score_thr=0.4` vì ổn định và tổng chi phí thấp nhất trên cả 3 frame (`20.50`).
 
 ## 3. Trước/sau (bước 8)
 
-![so sánh](../../d14_2A202604062/compare/<frame>.jpg)
+![so sánh](../../d14_2A202604062/compare/s02f17.jpg)
 
-- `scripts/pp_compare.py` báo giảm (hoặc tăng) ...% công sửa trên tập A.
-- Dự đoán ở mục 1 đúng hay sai? Giải thích bằng số box xóa/thêm/sửa: ...
+- `scripts/pp_compare.py` báo giảm 21% công sửa trên tập A (`25.8 -> 20.5`).
+- Dự đoán ở mục 1 đúng hay sai? Giải thích bằng số box xóa/thêm/sửa: Dự đoán ở mục 1 **đúng một phần**: việc nâng ngưỡng lọc `score_thr` lên `0.4` giúp cắt mạnh box `Car` ảo (giảm số hộp cần **xóa** từ `36` xuống `15`, dù số hộp cần **thêm** tăng nhẹ từ `11` lên `12`, giữ nguyên `8` sửa, giúp tổng chi phí giảm từ `25.8` xuống `20.5`). Tuy nhiên dự đoán dùng `intensity_mode=log` ở mục 1 **chưa đúng**: kết quả sweep cho thấy `log` làm chi phí tăng lên `23.7–29.7` do làm giảm recall nhiều hơn so với `clip`.
 
 ## 4. Tập B
 
@@ -43,4 +46,6 @@ Số đo từ `scripts/pp_prelabel.py --frames d14_2A202604062/frames_B.txt --co
 
 ## 5. Giới hạn
 
-- Nêu ít nhất 2 giới hạn (ví dụ: chỉ 3 frame tune; model KITTI không có Truck/Bus; chi phí là công thức, chưa phải thời gian sửa thật): ...
+- **Tập tune rất nhỏ (chỉ 3 frame):** Kết quả sweep dễ bị ảnh hưởng bởi đặc thù của 3 cảnh trong tập A (`leave-one-out` cho thấy `s01f23` nghiêng về `log, auto` trong khi `s02f17`/`s04f46` chọn `clip, fixed`).
+- **Domain gap & giới hạn 3 lớp của KITTI:** Model PointPillars chỉ được huấn luyện trên KITTI (3 lớp `Car`, `Pedestrian`, `Cyclist`), nên bỏ sót hoàn toàn `Bus`/`Truck` lớn (như xe buýt ở `s01f23`) và hay tạo box `Car` ảo trên bụi cây/hàng rào của dữ liệu VF.
+- **Chi phí công thức chưa phản ánh hết thời gian sửa thật:** Công thức `0.3·xóa + 1.0·thêm + 0.5·sửa` tính bằng số lượng box, chưa đo thời gian thao tác thực tế khi căn 3D cuboid (`L/W/H`, `z`, `yaw`) trên CVAT.
